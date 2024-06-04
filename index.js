@@ -29,6 +29,7 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     const usersCollection = client.db("SwiftTasker").collection("users");
+    const taskCollection = client.db("SwiftTasker").collection("tasks");
     // Connect the client to the server	(optional starting in v4.7)
     // await client.connect();
 
@@ -102,6 +103,12 @@ async function run() {
     app.get("/user/:email", async (req, res) => {
       const email = req.params.email;
       const result = await usersCollection.findOne({ email });
+      res.send(result);
+    });
+
+    app.post("/task", async (req, res) => {
+      const task = req.body;
+      const result = await taskCollection.insertOne(task);
       res.send(result);
     });
 

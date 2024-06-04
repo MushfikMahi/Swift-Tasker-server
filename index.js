@@ -29,7 +29,7 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     const usersCollection = client.db("SwiftTasker").collection("users");
-    const taskCollection = client.db("SwiftTasker").collection("tasks");
+    const tasksCollection = client.db("SwiftTasker").collection("tasks");
     // Connect the client to the server	(optional starting in v4.7)
     // await client.connect();
 
@@ -106,9 +106,24 @@ async function run() {
       res.send(result);
     });
 
+    // send a task to the db
     app.post("/task", async (req, res) => {
       const task = req.body;
-      const result = await taskCollection.insertOne(task);
+      const result = await tasksCollection.insertOne(task);
+      res.send(result);
+    });
+
+    app.patch("/user/:email", async (req, res) => {
+      const { newCoin } = req.body;
+      const email = req.params.email;
+      const filter = { email: email };
+      console.log("New Coin:", newCoin);
+      const updatedCoin = {
+        $set: {
+          coin: newCoin,
+        },
+      };
+      const result = await usersCollection.updateOne(filter, updatedCoin);
       res.send(result);
     });
 

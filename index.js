@@ -113,6 +113,7 @@ async function run() {
       res.send(result);
     });
 
+    // update the coin when created a task
     app.patch("/user/:email", async (req, res) => {
       const { newCoin } = req.body;
       const email = req.params.email;
@@ -124,6 +125,17 @@ async function run() {
         },
       };
       const result = await usersCollection.updateOne(filter, updatedCoin);
+      res.send(result);
+    });
+
+    // get taskcreator task by email
+    app.get("/tasks/:email", async (req, res) => {
+      const email = req.params.email;
+
+      const result = await tasksCollection
+        .find({ "task_creator.email": email })
+        .sort({ created_at: -1 })
+        .toArray();
       res.send(result);
     });
 

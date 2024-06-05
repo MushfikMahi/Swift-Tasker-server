@@ -4,7 +4,7 @@ require("dotenv").config();
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const jwt = require("jsonwebtoken");
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const port = process.env.PORT || 8000;
 const corsOption = {
   origin: ["http://localhost:5173", "http://localhost:5174"],
@@ -136,6 +136,14 @@ async function run() {
         .find({ "task_creator.email": email })
         .sort({ created_at: -1 })
         .toArray();
+      res.send(result);
+    });
+
+    // delete a data from my task
+    app.delete("/delete/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await tasksCollection.deleteOne(query);
       res.send(result);
     });
 

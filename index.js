@@ -66,6 +66,21 @@ async function run() {
       next();
     };
 
+    // verify TaskCreator middleware
+    const verifyTaskCreator = async (req, res, next) => {
+      console.log("hello");
+      const user = req.user;
+      console.log("task", user);
+      const query = { email: user?.email };
+      const result = await usersCollection.findOne(query);
+      console.log(result?.role);
+      if (!result || result?.role !== "TaskCreator") {
+        return res.status(401).send({ message: "unauthorized access!!" });
+      }
+
+      next();
+    };
+
     // auth related api
     app.post("/jwt", async (req, res) => {
       const user = req.body;
@@ -130,7 +145,7 @@ async function run() {
     });
 
     // get a user info by email from db
-    app.get("/user/:email", verifyToken, async (req, res) => {
+    app.get("/user/:email", async (req, res) => {
       const email = req.params.email;
       const result = await usersCollection.findOne({ email });
       res.send(result);
@@ -159,7 +174,7 @@ async function run() {
     });
 
     // get taskcreator task by email
-    app.get("/tasks/:email", async (req, res) => {
+    app.get("/tasks/:email", verifyTaskCreator, async (req, res) => {
       const email = req.params.email;
 
       const result = await tasksCollection

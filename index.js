@@ -16,21 +16,21 @@ app.use(express.json());
 app.use(cookieParser());
 
 // Verify Token Middleware
-const verifyToken = async (req, res, next) => {
-  const token = req.cookies?.token;
-  console.log(token);
-  if (!token) {
-    return res.status(401).send({ message: "unauthorized access" });
-  }
-  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
-    if (err) {
-      console.log(err);
-      return res.status(401).send({ message: "unauthorized access" });
-    }
-    req.user = decoded;
-    next();
-  });
-};
+// const verifyToken = async (req, res, next) => {
+//   const token = req.cookies?.token;
+//   console.log(token);
+//   if (!token) {
+//     return res.status(401).send({ message: "unauthorized access" });
+//   }
+//   jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
+//     if (err) {
+//       console.log(err);
+//       return res.status(401).send({ message: "unauthorized access" });
+//     }
+//     req.user = decoded;
+//     next();
+//   });
+// };
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.04rw29h.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 
@@ -47,6 +47,9 @@ async function run() {
   try {
     const usersCollection = client.db("SwiftTasker").collection("users");
     const tasksCollection = client.db("SwiftTasker").collection("tasks");
+    const submittedCollection = client
+      .db("SwiftTasker")
+      .collection("submissions");
     // Connect the client to the server	(optional starting in v4.7)
     // await client.connect();
 
@@ -54,32 +57,32 @@ async function run() {
     await client.db("admin").command({ ping: 1 });
 
     // verify admin middleware
-    const verifyAdmin = async (req, res, next) => {
-      console.log("hello");
-      const user = req.user;
-      const query = { email: user?.email };
-      const result = await usersCollection.findOne(query);
-      console.log(result?.role);
-      if (!result || result?.role !== "Admin")
-        return res.status(401).send({ message: "unauthorized access!!" });
+    // const verifyAdmin = async (req, res, next) => {
+    //   console.log("hello");
+    //   const user = req.user;
+    //   const query = { email: user?.email };
+    //   const result = await usersCollection.findOne(query);
+    //   console.log(result?.role);
+    //   if (!result || result?.role !== "Admin")
+    //     return res.status(401).send({ message: "unauthorized access!!" });
 
-      next();
-    };
+    //   next();
+    // };
 
     // verify TaskCreator middleware
-    const verifyTaskCreator = async (req, res, next) => {
-      console.log("hello");
-      const user = req.user;
-      console.log("task", user);
-      const query = { email: user?.email };
-      const result = await usersCollection.findOne(query);
-      console.log(result?.role);
-      if (!result || result?.role !== "TaskCreator") {
-        return res.status(401).send({ message: "unauthorized access!!" });
-      }
+    // const verifyTaskCreator = async (req, res, next) => {
+    //   console.log("hello");
+    //   const user = req.user;
+    //   console.log("task", user);
+    //   const query = { email: user?.email };
+    //   const result = await usersCollection.findOne(query);
+    //   console.log(result?.role);
+    //   if (!result || result?.role !== "TaskCreator") {
+    //     return res.status(401).send({ message: "unauthorized access!!" });
+    //   }
 
-      next();
-    };
+    //   next();
+    // };
 
     // auth related api
     app.post("/jwt", async (req, res) => {
@@ -192,8 +195,25 @@ async function run() {
       res.send(result);
     });
 
+    // get all the task data
     app.get("/tasks", async (req, res) => {
       const result = await tasksCollection.find().toArray();
+      res.send(result);
+    });
+
+    // get task detail
+    app.get("/task/:id", async (req, res) => {
+      const id = req.params.id;
+      console.log("the id", id);
+      const query = { _id: new ObjectId(id) };
+      const result = await tasksCollection.findOne(query);
+      res.send(result);
+    });
+
+    // send a submitted task to the db
+    app.post("/submission", async (req, res) => {
+      const task = req.body;
+      const result = await submittedCollection.insertOne(task);
       res.send(result);
     });
 

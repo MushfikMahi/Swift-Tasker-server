@@ -174,7 +174,7 @@ async function run() {
     });
 
     // get taskcreator task by email
-    app.get("/tasks/:email", verifyTaskCreator, async (req, res) => {
+    app.get("/tasks/:email", async (req, res) => {
       const email = req.params.email;
 
       const result = await tasksCollection
@@ -189,6 +189,11 @@ async function run() {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await tasksCollection.deleteOne(query);
+      res.send(result);
+    });
+
+    app.get("/tasks", async (req, res) => {
+      const result = await tasksCollection.find().toArray();
       res.send(result);
     });
 

@@ -187,6 +187,30 @@ async function run() {
       res.send(result);
     });
 
+    // get Applyed task
+    app.get("/submitted/:email", async (req, res) => {
+      const email = req.params.email;
+      const result = await submittedCollection
+        .find({ "task_creator.email": email })
+        .toArray();
+      res.send(result);
+    });
+
+    // update the status
+    app.patch("/submissionMark/:id", async (req, res) => {
+      const { newStatus } = req.body;
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      console.log("New status:", newStatus, id);
+      const updatedStatus = {
+        $set: {
+          status: newStatus,
+        },
+      };
+      const result = await submittedCollection.updateOne(filter, updatedStatus);
+      res.send(result);
+    });
+
     // delete a data from my task
     app.delete("/delete/:id", async (req, res) => {
       const id = req.params.id;

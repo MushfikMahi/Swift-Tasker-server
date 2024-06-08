@@ -147,6 +147,13 @@ async function run() {
       res.send(result);
     });
 
+    // get all the worker
+    app.get("/worker", async (req, res) => {
+      const query = { role: "Worker" };
+      const result = await usersCollection.find(query).toArray();
+      res.send(result);
+    });
+
     // get a user info by email from db
     app.get("/user/:email", async (req, res) => {
       const email = req.params.email;

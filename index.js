@@ -154,6 +154,21 @@ async function run() {
       res.send(result);
     });
 
+    // usedate user role
+    app.patch("/worker/:id", async (req, res) => {
+      const { newRole } = req.body;
+      const id = req.params.id;
+      const filter = { _id: ObjectId(id) };
+      console.log("New Coin:", newRole);
+      const updatedRole = {
+        $set: {
+          role: newRole,
+        },
+      };
+      const result = await usersCollection.updateOne(filter, updatedRole);
+      res.send(result);
+    });
+
     // get a user info by email from db
     app.get("/user/:email", async (req, res) => {
       const email = req.params.email;

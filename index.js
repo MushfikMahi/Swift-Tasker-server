@@ -219,6 +219,29 @@ async function run() {
       res.send(result);
     });
 
+    // update a data from
+    app.put("/update/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const options = { upsert: true };
+      const { updatedTask } = req.body;
+      const updatedDoc = {
+        $set: {
+          task_title: updatedTask.task_title,
+          task_detail: updatedTask.task_detail,
+          submission_info: updatedTask.submission_info,
+        },
+      };
+      const result = await tasksCollection.updateOne(
+        query,
+        updatedDoc,
+        options
+      );
+      res.send(result);
+    });
+
+    // get a data for update
+
     // get all the task data
     app.get("/tasks", async (req, res) => {
       const result = await tasksCollection.find().toArray();

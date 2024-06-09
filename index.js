@@ -158,7 +158,7 @@ async function run() {
     app.patch("/worker/:id", async (req, res) => {
       const { newRole } = req.body;
       const id = req.params.id;
-      const filter = { _id: ObjectId(id) };
+      const filter = { _id: new ObjectId(id) };
       console.log("New Coin:", newRole);
       const updatedRole = {
         $set: {

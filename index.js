@@ -47,6 +47,7 @@ async function run() {
   try {
     const usersCollection = client.db("SwiftTasker").collection("users");
     const tasksCollection = client.db("SwiftTasker").collection("tasks");
+    const futuresCollection = client.db("SwiftTasker").collection("future");
     const submittedCollection = client
       .db("SwiftTasker")
       .collection("submissions");
@@ -154,7 +155,7 @@ async function run() {
       res.send(result);
     });
 
-    // usedate user role
+    // update user role
     app.patch("/worker/:id", async (req, res) => {
       const { newRole } = req.body;
       const id = req.params.id;
@@ -262,11 +263,15 @@ async function run() {
       res.send(result);
     });
 
-    // get a data for update
-
     // get all the task data
     app.get("/tasks", async (req, res) => {
       const result = await tasksCollection.find().toArray();
+      res.send(result);
+    });
+
+    // get all the future data
+    app.get("/future", async (req, res) => {
+      const result = await futuresCollection.find().toArray();
       res.send(result);
     });
 

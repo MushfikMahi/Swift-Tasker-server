@@ -48,6 +48,9 @@ async function run() {
     const usersCollection = client.db("SwiftTasker").collection("users");
     const tasksCollection = client.db("SwiftTasker").collection("tasks");
     const futuresCollection = client.db("SwiftTasker").collection("future");
+    const testimonyCollection = client
+      .db("SwiftTasker")
+      .collection("testimony");
     const submittedCollection = client
       .db("SwiftTasker")
       .collection("submissions");
@@ -272,6 +275,12 @@ async function run() {
     // get all the future data
     app.get("/future", async (req, res) => {
       const result = await futuresCollection.find().toArray();
+      res.send(result);
+    });
+
+    // get all the testimony data
+    app.get("/testimony", async (req, res) => {
+      const result = await testimonyCollection.find().toArray();
       res.send(result);
     });
 

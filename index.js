@@ -77,6 +77,22 @@ async function run() {
       next();
     };
 
+    // admin states
+    app.get("/admin-stats", async (req, res) => {
+      const users = await usersCollection.estimatedDocumentCount();
+      const totalCoin = await usersCollection
+        .aggregate([
+          {
+            $group: {
+              _id: null,
+              total: { $sum: "$coin" },
+            },
+          },
+        ])
+        .toArray();
+      res.send({ users, totalCoin });
+    });
+
     // verify TaskCreator middleware
     const verifyTaskCreator = async (req, res, next) => {
       const user = req.user;

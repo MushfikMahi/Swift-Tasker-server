@@ -77,22 +77,6 @@ async function run() {
       next();
     };
 
-    // admin states
-    app.get("/admin-stats", async (req, res) => {
-      const users = await usersCollection.estimatedDocumentCount();
-      const totalCoin = await usersCollection
-        .aggregate([
-          {
-            $group: {
-              _id: null,
-              total: { $sum: "$coin" },
-            },
-          },
-        ])
-        .toArray();
-      res.send({ users, totalCoin });
-    });
-
     // verify TaskCreator middleware
     const verifyTaskCreator = async (req, res, next) => {
       const user = req.user;
@@ -107,6 +91,66 @@ async function run() {
 
       next();
     };
+
+    // admin states
+    app.get("/admin-stats", verifyToken, verifyAdmin, async (req, res) => {
+      const users = await usersCollection.estimatedDocumentCount();
+      const totalCoin = await usersCollection
+        .aggregate([
+          {
+            $group: {
+              _id: null,
+              total: { $sum: "$coin" },
+            },
+          },
+        ])
+        .toArray();
+      res.send({ users, totalCoin });
+    });
+
+    // TaskCreator State
+    app.get(
+      "/taskCreator-state/:email",
+      verifyToken,
+      verifyTaskCreator,
+      async (req, res) => {
+        const email = req.params.email;
+        const quantity = await tasksCollection
+          .aggregate([
+            {
+              $match: {
+                "task_creator.email": email,
+              },
+            },
+            {
+              $group: {
+                _id: "$task_creator.email",
+                totalQuantity: { $sum: "$task_quantity" },
+              },
+            },
+          ])
+          .toArray();
+        // const query = { "task_creator.email": email };
+        const coin = await usersCollection.findOne(
+          { email: email },
+          { projection: { coin: 1 } }
+        );
+        res.send({ quantity, coin });
+      }
+    );
+
+    // worker state
+    app.get("/worker-state/:email", async (req, res) => {
+      const email = req.params.email;
+      const coin = await usersCollection.findOne(
+        { email: email },
+        { projection: { coin: 1 } }
+      );
+      const totalSubmission = await submittedCollection.countDocuments({
+        "worker_info.email": email,
+      });
+      res.send({ coin, totalSubmission });
+    });
 
     // auth related api
     app.post("/jwt", async (req, res) => {

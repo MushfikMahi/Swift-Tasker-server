@@ -183,6 +183,14 @@ async function run() {
       }
     });
 
+    // get the approved data for the worker
+    app.get("/approved/:email", verifyToken, async (req, res) => {
+      const email = req.params.email;
+      const filter = { "worker_info.email": email, status: "Approved" };
+      const result = await submittedCollection.find(filter).toArray();
+      res.send(result);
+    });
+
     // save a user data in db
     app.put("/user", async (req, res) => {
       const user = req.body;

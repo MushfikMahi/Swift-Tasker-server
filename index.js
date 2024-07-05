@@ -51,6 +51,7 @@ async function run() {
   try {
     const usersCollection = client.db("SwiftTasker").collection("users");
     const tasksCollection = client.db("SwiftTasker").collection("tasks");
+    const withdrawCollection = client.db("SwiftTasker").collection("withdraw");
     const futuresCollection = client.db("SwiftTasker").collection("future");
     const testimonyCollection = client
       .db("SwiftTasker")
@@ -149,7 +150,19 @@ async function run() {
       const totalSubmission = await submittedCollection.countDocuments({
         "worker_info.email": email,
       });
-      res.send({ coin, totalSubmission });
+      const total = [
+        {
+          $match: { status: "Approved" },
+        },
+        {
+          $group: {
+            _id: null,
+            totalPayableAmount: { $sum: "$payable_amount" },
+          },
+        },
+      ];
+      const totalEarning = await submittedCollection.aggregate(total).toArray();
+      res.send({ coin, totalSubmission, totalEarning });
     });
 
     // auth related api
@@ -256,6 +269,13 @@ async function run() {
     app.post("/task", verifyToken, verifyTaskCreator, async (req, res) => {
       const task = req.body;
       const result = await tasksCollection.insertOne(task);
+      res.send(result);
+    });
+
+    // send the withdraw data
+    app.post("/withdraw", async (req, res) => {
+      const data = req.body;
+      const result = await withdrawCollection.insertOne(data);
       res.send(result);
     });
 

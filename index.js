@@ -96,6 +96,7 @@ async function run() {
     // admin states
     app.get("/admin-stats", verifyToken, verifyAdmin, async (req, res) => {
       const users = await usersCollection.estimatedDocumentCount();
+      const payment = await withdrawCollection.estimatedDocumentCount();
       const totalCoin = await usersCollection
         .aggregate([
           {
@@ -106,7 +107,7 @@ async function run() {
           },
         ])
         .toArray();
-      res.send({ users, totalCoin });
+      res.send({ users, totalCoin, payment });
     });
 
     // TaskCreator State
@@ -279,6 +280,12 @@ async function run() {
       res.send(result);
     });
 
+    // get withdraw data from db
+    app.get("/withdrawrequest", async (req, res) => {
+      const result = await withdrawCollection.find().toArray();
+      res.send(result);
+    });
+
     // update the coin when created a task
     app.patch("/user/:email", async (req, res) => {
       const { newCoin } = req.body;
@@ -352,6 +359,14 @@ async function run() {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await tasksCollection.deleteOne(query);
+      res.send(result);
+    });
+
+    // delete a data from withdraw request
+    app.delete("/delete-withdraw/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await withdrawCollection.deleteOne(query);
       res.send(result);
     });
 
